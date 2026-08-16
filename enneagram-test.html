@@ -3,24 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="54 题九型人格快速测试，答完即出九型得分、主型与翼型，可一键复制或分享结果。" />
+  <meta name="theme-color" content="#5b5bd6" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%80%3C/text%3E%3C/svg%3E" />
   <title>九型人格快速测试</title>
   <style>
-    :root { --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --brand:#5b5bd6; --brand2:#7c3aed; --soft:#f5f5ff; }
+    :root { --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --brand:#5b5bd6; --brand2:#7c3aed; --soft:#f5f5ff; --danger:#dc2626; }
     * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
     body { margin:0; color:var(--ink); background:linear-gradient(135deg,#f7f7ff,#fff 45%,#f5f8ff); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
     .wrap { max-width:900px; margin:0 auto; padding:28px 16px 60px; }
-    header { background:rgba(255,255,255,.88); border:1px solid var(--line); border-radius:22px; padding:24px; box-shadow:0 12px 35px rgba(64,64,130,.08); position:sticky; top:10px; z-index:5; backdrop-filter:blur(10px); }
-    h1 { margin:0 0 8px; font-size:clamp(24px,5vw,34px); letter-spacing:.02em; }
+    header { background:rgba(255,255,255,.88); border:1px solid var(--line); border-radius:22px; padding:24px; box-shadow:0 12px 35px rgba(64,64,130,.08); position:sticky; top:10px; z-index:5; backdrop-filter:blur(10px); transition:padding .2s; }
+    h1 { margin:0 0 8px; font-size:clamp(24px,5vw,34px); letter-spacing:.02em; transition:font-size .2s; }
     .sub { color:var(--muted); line-height:1.6; margin:0; }
+    /* 向下滚动后头部收起，少占屏幕空间 */
+    header.compact { padding:12px 24px; }
+    header.compact h1 { font-size:20px; margin-bottom:0; }
+    header.compact .sub { display:none; }
+    header.compact .bar { margin-top:10px; height:6px; }
+    header.compact .status { margin-top:6px; font-size:13px; }
     .bar { height:9px; background:#ececf8; border-radius:99px; overflow:hidden; margin-top:18px; }
     #progress { height:100%; width:0; background:linear-gradient(90deg,var(--brand),var(--brand2)); transition:width .25s; }
     .status { display:flex; justify-content:space-between; gap:12px; margin-top:9px; color:var(--muted); font-size:14px; }
-    .question { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; margin:16px 0; box-shadow:0 5px 18px rgba(31,41,55,.04); scroll-margin-top:150px; }
+    .question { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; margin:16px 0; box-shadow:0 5px 18px rgba(31,41,55,.04); scroll-margin-top:120px; transition:border-color .2s, box-shadow .2s; }
+    .question.missing { border-color:var(--danger); box-shadow:0 0 0 3px rgba(220,38,38,.12); }
+    .question.missing .qtext::after { content:"未作答"; color:var(--danger); font-size:12px; font-weight:600; margin-left:8px; vertical-align:middle; }
     .qtext { font-size:17px; line-height:1.65; margin:0 0 15px; }
     .num { color:var(--brand); font-weight:700; margin-right:7px; }
-    .options { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-    .options label { cursor:pointer; text-align:center; border:1px solid #d9daf0; border-radius:12px; padding:11px 5px 9px; background:#fafaff; transition:.15s; user-select:none; }
+    fieldset.options { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; border:0; padding:0; margin:0; min-width:0; }
+    .options label { cursor:pointer; text-align:center; border:1px solid #d9daf0; border-radius:12px; padding:11px 5px 9px; background:#fafaff; transition:.15s; user-select:none; position:relative; }
     .options label:hover { border-color:var(--brand); transform:translateY(-1px); }
+    .options label:has(input:checked) { border-color:var(--brand); background:#fff; }
+    .options label:has(input:focus-visible) { outline:2px solid var(--brand2); outline-offset:2px; }
     .options input { position:absolute; opacity:0; pointer-events:none; }
     .options input:checked + span { background:var(--brand); color:#fff; box-shadow:0 5px 12px rgba(91,91,214,.25); }
     .options span { display:block; border-radius:8px; padding:7px 3px; font-weight:700; font-size:18px; }
@@ -30,45 +44,74 @@
     .export-box { display:flex; flex-wrap:wrap; align-items:end; gap:10px; margin-top:15px; padding:14px; background:#f8f8ff; border:1px solid #e5e5fa; border-radius:13px; }
     .export-box label { display:flex; flex-direction:column; gap:5px; color:var(--muted); font-size:13px; font-weight:600; }
     select { min-width:130px; border:1px solid #d9daf0; border-radius:9px; padding:9px 10px; color:var(--ink); background:#fff; font:inherit; }
-    button { border:0; border-radius:12px; padding:13px 18px; font-size:15px; cursor:pointer; font-weight:700; }
+    button { border:0; border-radius:12px; padding:13px 18px; font-size:15px; cursor:pointer; font-weight:700; font-family:inherit; }
+    button:focus-visible { outline:2px solid var(--brand2); outline-offset:2px; }
     .primary { background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#fff; }
     .secondary { background:#eef0ff; color:#4646a8; }
-    .result { display:none; background:#fff; border:1px solid #dcdcff; border-radius:20px; padding:22px; margin-top:22px; box-shadow:0 10px 28px rgba(91,91,214,.12); }
+    .result { display:none; background:#fff; border:1px solid #dcdcff; border-radius:20px; padding:22px; margin-top:22px; box-shadow:0 10px 28px rgba(91,91,214,.12); scroll-margin-top:120px; }
     .result h2 { margin:0 0 6px; }
     .hint { color:var(--muted); font-size:14px; line-height:1.6; }
-    .scores { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:17px 0; }
-    .score { background:var(--soft); border-radius:13px; padding:12px; }
-    .score b { display:block; font-size:18px; color:#3737a1; }
-    .score span { color:var(--muted); font-size:13px; }
+    .shared-note { display:none; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px; padding:10px 14px; font-size:14px; margin-top:12px; }
+    .highlight { background:linear-gradient(135deg,#f5f5ff,#f3e8ff); border:1px solid #e0d7ff; border-radius:16px; padding:16px 18px; margin:16px 0; }
+    .highlight .label { color:var(--muted); font-size:13px; }
+    .highlight .type { font-size:22px; font-weight:800; color:#3737a1; margin:2px 0 6px; }
+    .highlight .desc { margin:0; line-height:1.7; font-size:14.5px; }
+    .highlight .wing { color:var(--muted); font-size:13px; margin-top:8px; }
+    .ranking { display:flex; flex-direction:column; gap:9px; margin:16px 0; }
+    .row { display:grid; grid-template-columns:110px 1fr 56px; align-items:center; gap:10px; font-size:14px; }
+    .row .name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row .track { height:14px; background:#ececf8; border-radius:99px; overflow:hidden; }
+    .row .fill { height:100%; width:0; background:linear-gradient(90deg,var(--brand),var(--brand2)); border-radius:99px; transition:width .6s ease; }
+    .row.best .fill { background:linear-gradient(90deg,#f59e0b,#f97316); }
+    .row .val { text-align:right; font-weight:700; color:#3737a1; font-variant-numeric:tabular-nums; }
     textarea { width:100%; min-height:150px; border:1px solid var(--line); border-radius:12px; padding:12px; font:14px/1.6 inherit; resize:vertical; }
     .top { text-align:center; margin:18px 0 0; }
     .top a { color:var(--brand); cursor:pointer; font-size:14px; }
     footer { text-align:center; color:#9ca3af; font-size:12px; margin-top:28px; letter-spacing:.04em; }
-    @media (max-width:560px) { header { padding:18px; top:5px; } .question { padding:16px; } .options { gap:5px; } .options label { padding:8px 2px 6px; } .options span { font-size:16px; } .options small { font-size:10px; } .scores { grid-template-columns:repeat(2,1fr); } }
+    #toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:rgba(31,41,55,.94); color:#fff; padding:11px 18px; border-radius:12px; font-size:14px; opacity:0; pointer-events:none; transition:.25s; z-index:20; max-width:calc(100% - 32px); text-align:center; }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    #toast.error { background:rgba(185,28,28,.95); }
+    @media (max-width:560px) {
+      header { padding:18px; top:5px; }
+      header.compact { padding:10px 18px; }
+      header.compact h1 { font-size:17px; }
+      header.compact .status span:last-child { display:none; }
+      .question, .result { scroll-margin-top:100px; }
+      .question { padding:16px; }
+      .options { gap:5px; }
+      .options label { padding:8px 2px 6px; }
+      .options span { font-size:16px; }
+      .options small { font-size:10px; }
+      .row { grid-template-columns:86px 1fr 46px; font-size:13px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } .row .fill, .options label { transition:none; } }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <header>
+    <header id="header">
       <h1>九型人格快速测试</h1>
-      <p class="sub">共 54 题，请按直觉选择最符合你平时状态的程度。答完后可直接复制结果发送给对方。</p>
-      <div class="bar"><div id="progress"></div></div>
+      <p class="sub">共 54 题，请按直觉选择最符合你平时状态的程度。答完后可直接复制结果或分享链接发送给对方。答题进度会自动保存在本机。</p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="54" aria-valuenow="0" id="progressbar"><div id="progress"></div></div>
       <div class="status"><span id="count">已完成 0 / 54</span><span>1 = 完全不符合　5 = 完全符合</span></div>
     </header>
 
-    <section id="questions"></section>
+    <section id="questions" aria-label="题目列表"></section>
     <div class="actions">
       <button class="primary" id="finish">完成并生成结果</button>
       <button class="secondary" id="clear">清空重答</button>
     </div>
-    <section class="result" id="result">
+    <section class="result" id="result" aria-live="polite">
       <h2>你的答题结果</h2>
-      <p class="hint">以下是按每 6 题汇总的分数，仅用于完成这份测试，不等同于专业心理评估。</p>
-      <div class="scores" id="scores"></div>
-      <textarea id="summary" readonly></textarea>
+      <p class="hint">以下是按每 6 题汇总的分数（每型 6～30 分），仅用于完成这份测试，不等同于专业心理评估。</p>
+      <div class="shared-note" id="sharedNote">这是通过链接分享的答题结果。你可以修改任意选项重新计算，也可以点击「清空重答」开始自己的测试。</div>
+      <div class="highlight" id="highlight"></div>
+      <div class="ranking" id="ranking"></div>
+      <textarea id="summary" readonly aria-label="汇总结果文本"></textarea>
       <div class="actions">
         <button class="primary" id="copy">复制汇总结果</button>
         <button class="secondary" id="copyDetails">复制逐题结果</button>
+        <button class="secondary" id="share">复制分享链接</button>
       </div>
       <div class="export-box">
         <label>导出内容
@@ -80,30 +123,176 @@
         <button class="secondary" id="download">下载文件</button>
       </div>
     </section>
-    <div class="top"><a id="toplink">回到顶部</a></div>
+    <div class="top"><a id="toplink" href="#top">回到顶部</a></div>
     <footer>Made by fuyundev</footer>
   </main>
+  <div id="toast" role="status" aria-live="polite"></div>
 <script>
 const questions = [
 "我总是注意到别人的错误，并向他直接指出来。","大家觉得我总是一脸严肃，表情生硬。","我力求尽善尽美，常常反思不足、自我批评、努力改进。","我期望一切井然有序，无法对明知的错误或混乱视而不见。","大家觉得我应该放松点，多一点人情味。","只有每个步骤及细节都做对了，结果才会正确。","帮不到别人的时候我感到特别难受。","我高兴帮助别人，却不习惯需要别人的帮助。","我时常为别人的事四处跑，忙得不亦乐乎。","当没有为别人的事而忙碌时，我会感到寂寞。","大家很乐意向我诉说他们的困难。","我会基于同情心站在朋友一边，即使他们犯错了。","我不觉得向别人展示自己的成功有什么难为情的。","我喜欢当主角，受到众人的关注。","我能轻易说服别人。","我办事效率高，能迅速模仿别人快捷的办法。","我精力充沛，喜欢不断追求更多的成功。","不管什么场合，人们都能看到我最棒的一面。","我特别能感受悲伤，有时甚至享受这种感觉。","我缺少很多别人拥有的东西。","我常常有被遗弃的感觉。","初见我的人觉得我表现冷漠而高傲。","我常常不知道自己下一刻想要什么。","我常在同一天内感受到喜怒哀乐的变化。","探索自然的奥秘，我感到其乐无穷。","我很少主动去接近别人。","我很少快速做出判断，而需要周密地考虑。","要在众人面前表现自己会使我不自在甚至有点怯场。","独自在宽敞的资料室收集各种信息，是一种享受。","我特别需要独处的时间。","我总是设想最坏的结果，然后陷入苦恼之中。","我常常试探或考验朋友的忠诚。","所有罪名中，让我最厌恶的是欺骗。","我有时自信自己掌握了权威，有时却想依赖别人的决定。","上司最看重我尽忠职守，朋友也觉得我忠诚可靠。","面对威胁，我一时焦急忧虑，一时激烈反抗。","我很在意自己是否依然年轻有活力，常担心自由被剥夺。","我时常发现新开张的美食店，最新的服装款式，或新兴的游乐节目。","我觉得有很多新鲜有趣的事情，人生真是好玩又快乐。","我总是有许多新鲜有趣的计划，时间怎么也不够用。","我只喜欢与有趣的人为友，对一些闷蛋却懒得交往，即使他们看来很有深度。","我很少用心去听别人的心情，只喜欢说说俏皮话和笑话。","我看不起那些软弱的人。","我享受掌握权力的感觉，喜欢迎接挑战。","对那些行为过分的人，我一定好好教训他们。","我敢于与人正面交锋，不害怕冲突。","我总是禁不住要支持弱小的一方。","我说了许多别人想说又没胆量说的话。","面对问题，我经常想“时间总是有的，改天再说吧”。","我对朋友或家人很少表达反对意见。","我常常不清楚自己有什么需要。","我不要求获得任何关注。","我特别容易认同别人的想法和做法。","面对别人无理的指责，我常常只是沉默不想说话。"
 ];
 const types = ["1号 完美型","2号 助人型","3号 成就型","4号 自我型","5号 理智型","6号 忠诚型","7号 活跃型","8号 领袖型","9号 和平型"];
+const descs = [
+  "追求正确与秩序，原则性强、自律负责，习惯反思与改进，但容易对自己和他人过于苛刻。",
+  "热情体贴、乐于付出，重视人际关系，善于察觉他人需要，却常常忽略自己的感受。",
+  "目标导向、高效务实，重视成果与形象，适应力强，有时会把自我价值绑在成就上。",
+  "情感细腻、追求独特与真实，富有审美与创造力，情绪起伏较大，容易感到与众不同或被误解。",
+  "好奇求知、独立冷静，喜欢观察与思考，重视私人空间，倾向先想清楚再行动。",
+  "谨慎负责、忠诚可靠，善于预见风险、未雨绸缪，但容易焦虑和反复怀疑。",
+  "乐观开朗、热爱新鲜与自由，兴趣广泛、点子多，害怕被束缚，有时难以坚持到底。",
+  "果断有力、敢于担当，直面冲突、保护弱小，掌控欲较强，不喜欢示弱。",
+  "随和包容、善于调解，追求和谐与安稳，容易顺从他人、回避冲突，有时会拖延。"
+];
+const LABELS = { 1:'完全不符合', 2:'较不符合', 3:'一般', 4:'较符合', 5:'完全符合' };
+const STORAGE_KEY = 'enneagramAnswers';
+const N = questions.length;
 let latestSums = [];
-const root = document.getElementById('questions');
-questions.forEach((q,i)=>{ const n=i+1; const el=document.createElement('article'); el.className='question'; el.id='q'+n; el.innerHTML=`<p class="qtext"><span class="num">${n}.</span>${q}</p><div class="options">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="q${n}" value="${v}"><span>${v}</span><small>${v===1?'完全不符合':v===5?'完全符合':v===2?'较不符合':v===4?'较符合':'一般'}</small></label>`).join('')}</div>`; root.appendChild(el); });
-function labelFor(v){ return v==1?'完全不符合':v==5?'完全符合':v==2?'较不符合':v==4?'较符合':'一般'; }
-function update(){ const answered=document.querySelectorAll('input:checked').length; document.getElementById('count').textContent=`已完成 ${answered} / ${questions.length}`; document.getElementById('progress').style.width=(answered/questions.length*100)+'%'; const saved={}; document.querySelectorAll('input:checked').forEach(x=>saved[x.name]=x.value); localStorage.setItem('enneagramAnswers',JSON.stringify(saved)); }
-root.addEventListener('change',update);
-document.getElementById('finish').onclick=()=>{ const vals=questions.map((_,i)=>document.querySelector(`input[name=q${i+1}]:checked`)); const missing=vals.findIndex(x=>!x); if(missing>=0){ document.getElementById('q'+(missing+1)).scrollIntoView({behavior:'smooth',block:'center'}); alert(`还有第 ${missing+1} 题未选择，请完成后再生成结果。`); return; } const sums=Array(9).fill(0); vals.forEach((x,i)=>sums[Math.floor(i/6)]+=Number(x.value)); latestSums=sums; const scores=document.getElementById('scores'); scores.innerHTML=sums.map((s,i)=>`<div class="score"><b>${s} 分</b><span>${types[i]}</span></div>`).join(''); const max=Math.max(...sums), winners=sums.map((s,i)=>s===max?types[i]:'').filter(Boolean).join('、'); const lines=['九型人格测试结果','',...sums.map((s,i)=>`${types[i]}：${s} 分`),'',`最高分：${winners}`]; document.getElementById('summary').value=lines.join('\n'); document.getElementById('result').style.display='block'; document.getElementById('result').scrollIntoView({behavior:'smooth'}); };
-document.getElementById('copy').onclick=async()=>{ try{ await navigator.clipboard.writeText(document.getElementById('summary').value); alert('结果已复制，可以直接粘贴发送。'); }catch(e){ document.getElementById('summary').select(); document.execCommand('copy'); alert('结果已复制。'); } };
-function detailText(){ const vals=questions.map((_,i)=>document.querySelector(`input[name=q${i+1}]:checked`)); return ['九型人格测试逐题结果','',...questions.map((q,i)=>`${i+1}. ${q}\n   我的选择：${vals[i].value}（${labelFor(vals[i].value)}）`)].join('\n\n'); }
-document.getElementById('copyDetails').onclick=async()=>{ try{ await navigator.clipboard.writeText(detailText()); alert('逐题结果已复制，可以直接粘贴发送。'); }catch(e){ const t=document.createElement('textarea'); t.value=detailText(); document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); alert('逐题结果已复制。'); } };
-function exportContent(){ const mode=document.getElementById('exportMode').value, format=document.getElementById('exportFormat').value; if(format==='txt') return mode==='summary'?document.getElementById('summary').value:detailText(); if(mode==='summary'){ if(format==='json') return JSON.stringify({title:'九型人格测试结果',scores:types.map((type,i)=>({type,score:latestSums[i]}))},null,2); return [['类型','分数'],...types.map((type,i)=>[type,latestSums[i]])].map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'); } const vals=questions.map((_,i)=>document.querySelector(`input[name=q${i+1}]:checked`)); if(format==='json') return JSON.stringify({title:'九型人格测试逐题结果',answers:questions.map((q,i)=>({questionNo:i+1,question:q,score:Number(vals[i].value),label:labelFor(vals[i].value)}))},null,2); return [['题号','题目','分数','选项'],...questions.map((q,i)=>[i+1,q,vals[i].value,labelFor(vals[i].value)])].map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'); }
-document.getElementById('download').onclick=()=>{ const format=document.getElementById('exportFormat').value; const ext=format==='txt'?'txt':format; const mime=format==='json'?'application/json;charset=utf-8':format==='csv'?'text/csv;charset=utf-8':'text/plain;charset=utf-8'; const blob=new Blob([exportContent()],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`九型人格测试结果.${ext}`; a.click(); URL.revokeObjectURL(a.href); };
-document.getElementById('clear').onclick=()=>{ if(confirm('确定要清空所有答案并重新开始吗？')){ document.querySelectorAll('input:checked').forEach(x=>x.checked=false); localStorage.removeItem('enneagramAnswers'); document.getElementById('result').style.display='none'; update(); window.scrollTo({top:0,behavior:'smooth'}); } };
-document.getElementById('toplink').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
-try{ const saved=JSON.parse(localStorage.getItem('enneagramAnswers')||'{}'); Object.entries(saved).forEach(([name,value])=>{ const input=document.querySelector(`input[name="${name}"][value="${value}"]`); if(input) input.checked=true; }); }catch(e){}
-update();
+let viewingShared = false;
+let toastTimer;
+
+const $ = id => document.getElementById(id);
+const root = $('questions');
+questions.forEach((q,i)=>{
+  const n=i+1; const el=document.createElement('article'); el.className='question'; el.id='q'+n;
+  el.innerHTML=`<p class="qtext" id="qt${n}"><span class="num">${n}.</span>${q}</p><fieldset class="options" aria-labelledby="qt${n}">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="q${n}" value="${v}" aria-label="${v} ${LABELS[v]}"><span>${v}</span><small>${LABELS[v]}</small></label>`).join('')}</fieldset>`;
+  root.appendChild(el);
+});
+
+function labelFor(v){ return LABELS[Number(v)] || ''; }
+function toast(msg, isError){ const t=$('toast'); t.textContent=msg; t.classList.toggle('error',!!isError); t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+function answerOf(i){ const el=document.querySelector(`input[name=q${i+1}]:checked`); return el?Number(el.value):0; }
+function allAnswers(){ return questions.map((_,i)=>answerOf(i)); }
+function checkedInputs(){ return document.querySelectorAll('#questions input:checked'); }
+
+function update(){
+  const answered=checkedInputs().length;
+  $('count').textContent=`已完成 ${answered} / ${N}`;
+  $('progress').style.width=(answered/N*100)+'%';
+  $('progressbar').setAttribute('aria-valuenow',answered);
+  if(!viewingShared){ const saved={}; checkedInputs().forEach(x=>saved[x.name]=x.value); localStorage.setItem(STORAGE_KEY,JSON.stringify(saved)); }
+}
+
+root.addEventListener('change',e=>{
+  if(!(e.target instanceof HTMLInputElement)) return;
+  if(viewingShared){ viewingShared=false; $('sharedNote').style.display='none'; history.replaceState(null,'',location.pathname); }
+  update();
+  const card=e.target.closest('.question'); card.classList.remove('missing');
+  // 若结果已展示，实时重算；否则自动滚到下一道未答题
+  if($('result').style.display==='block'){ renderResult(); return; }
+  let next=card.nextElementSibling;
+  while(next && next.querySelector('input:checked')) next=next.nextElementSibling;
+  if(next) setTimeout(()=>next.scrollIntoView({behavior:'smooth',block:'center'}),120);
+});
+
+function computeSums(vals){ const sums=Array(9).fill(0); vals.forEach((v,i)=>sums[Math.floor(i/6)]+=v); return sums; }
+function analyze(sums){
+  const max=Math.max(...sums);
+  const tops=sums.map((s,i)=>s===max?i:-1).filter(i=>i>=0);
+  const order=sums.map((s,i)=>i).sort((a,b)=>sums[b]-sums[a]||a-b);
+  let wing=null;
+  if(tops.length===1){ const t=tops[0], l=(t+8)%9, r=(t+1)%9; if(sums[l]!==sums[r]) wing=sums[l]>sums[r]?l:r; }
+  return { max, tops, order, wing };
+}
+function summaryText(sums){
+  const { max, tops, order, wing } = analyze(sums);
+  const lines=['九型人格测试结果','',...order.map((i,k)=>`${k+1}. ${types[i]}：${sums[i]} 分`),'',`最高分：${tops.map(i=>types[i]).join('、')}（${max} 分）`];
+  if(wing!==null) lines.push(`可能的翼型：${types[wing]}`);
+  return lines.join('\n');
+}
+function renderResult(){
+  const vals=allAnswers(); if(vals.some(v=>!v)) return;
+  const sums=computeSums(vals); latestSums=sums;
+  const { max, tops, order, wing } = analyze(sums);
+  $('highlight').innerHTML = tops.length===1
+    ? `<div class="label">你的主要类型倾向</div><div class="type">${types[tops[0]]}</div><p class="desc">${descs[tops[0]]}</p>${wing!==null?`<div class="wing">可能的翼型：${types[wing]}（${sums[wing]} 分）</div>`:''}`
+    : `<div class="label">最高分并列，你可能同时具有以下倾向</div><div class="type">${tops.map(i=>types[i]).join(' / ')}</div>${tops.map(i=>`<p class="desc"><b>${types[i]}</b>：${descs[i]}</p>`).join('')}`;
+  $('ranking').innerHTML = order.map(i=>`<div class="row${sums[i]===max?' best':''}"><span class="name">${types[i]}</span><div class="track"><div class="fill" data-w="${(sums[i]/30*100).toFixed(1)}"></div></div><span class="val">${sums[i]} 分</span></div>`).join('');
+  requestAnimationFrame(()=>document.querySelectorAll('.row .fill').forEach(f=>f.style.width=f.dataset.w+'%'));
+  $('summary').value=summaryText(sums);
+  $('result').style.display='block';
+}
+
+$('finish').onclick=()=>{
+  const vals=allAnswers();
+  document.querySelectorAll('.question.missing').forEach(q=>q.classList.remove('missing'));
+  const missing=vals.map((v,i)=>v?-1:i).filter(i=>i>=0);
+  if(missing.length){
+    missing.forEach(i=>$('q'+(i+1)).classList.add('missing'));
+    $('q'+(missing[0]+1)).scrollIntoView({behavior:'smooth',block:'center'});
+    toast(`还有 ${missing.length} 题未作答，已为你标出，请完成后再生成结果。`, true);
+    return;
+  }
+  renderResult();
+  $('result').scrollIntoView({behavior:'smooth'});
+};
+
+async function copyText(text, okMsg){
+  try{ await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(e){ const t=document.createElement('textarea'); t.value=text; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); const ok=document.execCommand('copy'); t.remove(); toast(ok?okMsg:'复制失败，请手动选择文本复制。', !ok); }
+}
+$('copy').onclick=()=>copyText($('summary').value,'汇总结果已复制，可以直接粘贴发送。');
+function detailText(){ const vals=allAnswers(); return ['九型人格测试逐题结果','',...questions.map((q,i)=>`${i+1}. ${q}\n   我的选择：${vals[i]}（${labelFor(vals[i])}）`),'',summaryText(computeSums(vals))].join('\n\n'); }
+$('copyDetails').onclick=()=>copyText(detailText(),'逐题结果已复制，可以直接粘贴发送。');
+
+function encodeAnswers(vals){ return vals.join(''); }
+function decodeAnswers(str){ if(!/^[1-5]+$/.test(str) || str.length!==N) return null; return str.split('').map(Number); }
+$('share').onclick=()=>{ const url=`${location.origin}${location.pathname}#a=${encodeAnswers(allAnswers())}`; copyText(url,'分享链接已复制，对方打开即可看到你的结果。'); };
+
+function csv(rows){ return rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'); }
+function exportContent(){
+  const mode=$('exportMode').value, format=$('exportFormat').value; const vals=allAnswers();
+  if(format==='txt') return mode==='summary'?$('summary').value:detailText();
+  if(mode==='summary'){
+    if(format==='json') return JSON.stringify({title:'九型人格测试结果',scores:types.map((type,i)=>({type,score:latestSums[i]}))},null,2);
+    return csv([['类型','分数'],...types.map((type,i)=>[type,latestSums[i]])]);
+  }
+  if(format==='json') return JSON.stringify({title:'九型人格测试逐题结果',answers:questions.map((q,i)=>({questionNo:i+1,question:q,score:vals[i],label:labelFor(vals[i])})),scores:types.map((type,i)=>({type,score:latestSums[i]}))},null,2);
+  return csv([['题号','题目','分数','选项'],...questions.map((q,i)=>[i+1,q,vals[i],labelFor(vals[i])])]);
+}
+$('download').onclick=()=>{
+  const format=$('exportFormat').value; const ext=format;
+  const mime=format==='json'?'application/json;charset=utf-8':format==='csv'?'text/csv;charset=utf-8':'text/plain;charset=utf-8';
+  const content=(format==='csv'?'\uFEFF':'')+exportContent(); // CSV 加 BOM，Excel 打开不乱码
+  const blob=new Blob([content],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  const d=new Date(), stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  a.download=`九型人格测试结果_${stamp}.${ext}`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('文件已开始下载。');
+};
+
+$('clear').onclick=()=>{
+  if(!confirm('确定要清空所有答案并重新开始吗？')) return;
+  checkedInputs().forEach(x=>x.checked=false);
+  document.querySelectorAll('.question.missing').forEach(q=>q.classList.remove('missing'));
+  viewingShared=false; $('sharedNote').style.display='none'; history.replaceState(null,'',location.pathname);
+  $('result').style.display='none'; update(); localStorage.removeItem(STORAGE_KEY);
+  window.scrollTo({top:0,behavior:'smooth'}); toast('已清空，可以重新开始作答。');
+};
+$('toplink').onclick=e=>{ e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+// 向下滚动时收起头部
+let ticking=false;
+window.addEventListener('scroll',()=>{ if(ticking) return; ticking=true; requestAnimationFrame(()=>{ $('header').classList.toggle('compact',window.scrollY>160); ticking=false; }); },{passive:true});
+
+// 初始化：优先读取分享链接，其次恢复本机进度
+function applyAnswers(vals){ vals.forEach((v,i)=>{ const input=document.querySelector(`input[name="q${i+1}"][value="${v}"]`); if(input) input.checked=true; }); }
+(function init(){
+  const m=location.hash.match(/^#a=([1-5]+)$/);
+  const shared=m?decodeAnswers(m[1]):null;
+  if(shared){
+    viewingShared=true; applyAnswers(shared); update(); renderResult();
+    $('sharedNote').style.display='block';
+    setTimeout(()=>$('result').scrollIntoView({behavior:'smooth'}),100);
+    return;
+  }
+  try{
+    const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    Object.entries(saved).forEach(([name,value])=>{ const input=document.querySelector(`input[name="${name}"][value="${value}"]`); if(input) input.checked=true; });
+  }catch(e){}
+  update();
+  const answered=checkedInputs().length;
+  if(answered===N){ renderResult(); toast('已恢复你上次的答题结果。'); }
+  else if(answered>0){ toast(`已恢复上次进度：${answered} / ${N} 题。`); }
+})();
 </script>
 </body>
 </html>
