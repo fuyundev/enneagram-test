@@ -67,6 +67,8 @@
     .result h2 { margin:0 0 6px; }
     .hint { color:var(--muted); font-size:14px; line-height:1.6; }
     .highlight { background:linear-gradient(135deg,#f5f5ff,#f3e8ff); border:1px solid #e0d7ff; border-radius:16px; padding:16px 18px; margin:16px 0; }
+    .highlight.flat { background:#fffbeb; border-color:#fde68a; }
+    .highlight.flat .type { color:#92400e; font-size:19px; }
     .highlight .label { color:var(--muted); font-size:13px; }
     .highlight .type { font-size:22px; font-weight:800; color:#3737a1; margin:2px 0 6px; }
     .highlight .desc { margin:0; line-height:1.7; font-size:14.5px; }
@@ -126,7 +128,7 @@
     </div>
     <section class="result" id="result" aria-live="polite">
       <h2>你的答题结果</h2>
-      <p class="hint">以下是按每 6 题汇总的分数（每型 6～30 分），仅用于完成这份测试，不等同于专业心理评估。</p>
+      <p class="hint">以下是按每 6 题汇总的分数（每型 6～30 分）。得分高低只反映你在这份问卷上的作答倾向，不等同于专业心理评估。</p>
       <div class="highlight" id="highlight"></div>
       <div class="ranking" id="ranking"></div>
       <textarea id="summary" hidden readonly aria-hidden="true" tabindex="-1"></textarea>
@@ -226,28 +228,39 @@ root.addEventListener('change',e=>{
 
 function computeSums(vals){ const sums=Array(9).fill(0); vals.forEach((v,i)=>sums[Math.floor(i/6)]+=v); return sums; }
 function analyze(sums){
-  const max=Math.max(...sums);
+  const max=Math.max(...sums), min=Math.min(...sums);
   const tops=sums.map((s,i)=>s===max?i:-1).filter(i=>i>=0);
   const order=sums.map((s,i)=>i).sort((a,b)=>sums[b]-sums[a]||a-b);
+  // 区分度不足：分数几乎持平（极差 ≤3）或 ≥3 型并列最高，说明作答没有拉开选项，不下结论
+  const flat = (max-min)<=3 || tops.length>=3;
+  // 整体偏低：最高分 ≤12（平均每题不超过 2 分），倾向较弱
+  const weak = !flat && max<=12;
   let wing=null;
-  if(tops.length===1){ const t=tops[0], l=(t+8)%9, r=(t+1)%9; if(sums[l]!==sums[r]) wing=sums[l]>sums[r]?l:r; }
-  return { max, tops, order, wing };
+  if(!flat && tops.length===1){ const t=tops[0], l=(t+8)%9, r=(t+1)%9; if(sums[l]!==sums[r]) wing=sums[l]>sums[r]?l:r; }
+  return { max, min, tops, order, wing, flat, weak };
 }
 function summaryText(sums){
-  const { max, tops, order, wing } = analyze(sums);
-  const lines=['九型人格测试结果','',...order.map((i,k)=>`${k+1}. ${types[i]}：${sums[i]} 分`),'',`最高分：${tops.map(i=>types[i]).join('、')}（${max} 分）`];
+  const { max, min, tops, order, wing, flat, weak } = analyze(sums);
+  const lines=['九型人格测试结果','',...order.map((i,k)=>`${k+1}. ${types[i]}：${sums[i]} 分`),''];
+  if(flat){ lines.push(`各型得分非常接近（最高 ${max} 分、最低 ${min} 分），无法判断明显倾向，建议拉开选项重新作答。`); return lines.join('\n'); }
+  lines.push(`得分最高：${tops.map(i=>types[i]).join('、')}（${max} 分）`);
   if(wing!==null) lines.push(`可能的翼型：${types[wing]}`);
+  if(weak) lines.push('整体得分偏低，倾向较弱，结果仅供参考。');
   return lines.join('\n');
 }
 function renderResult(){
   const vals=allAnswers(); if(vals.some(v=>!v)) return;
   const sums=computeSums(vals); latestSums=sums;
-  const { max, tops, order, wing } = analyze(sums);
-  $('highlight').innerHTML = tops.length===1
-    ? `<div class="label">你的主要类型倾向</div><div class="type">${types[tops[0]]}</div><p class="desc">${descs[tops[0]]}</p>${wing!==null?`<div class="wing">可能的翼型：${types[wing]}（${sums[wing]} 分）</div>`:''}`
-    : `<div class="label">最高分并列，你可能同时具有以下倾向</div><div class="type">${tops.map(i=>types[i]).join(' / ')}</div>${tops.map(i=>`<p class="desc"><b>${types[i]}</b>：${descs[i]}</p>`).join('')}`;
+  const { max, min, tops, order, wing, flat, weak } = analyze(sums);
+  const weakNote = weak ? `<div class="wing">整体得分偏低（最高仅 ${max} 分），倾向较弱，结果仅供参考。</div>` : '';
+  $('highlight').className = 'highlight' + (flat ? ' flat' : '');
+  $('highlight').innerHTML = flat
+    ? `<div class="label">结果区分度不足</div><div class="type">暂时无法判断明显倾向</div><p class="desc">你的各型得分非常接近（最高 ${max} 分、最低 ${min} 分）。这通常是作答时选项过于集中——比如大多数题都选了同一个分数。建议按第一直觉重新作答，尽量拉开「符合」与「不符合」的题目。</p>`
+    : tops.length===1
+    ? `<div class="label">得分最高的类型</div><div class="type">${types[tops[0]]}</div><p class="desc">${descs[tops[0]]}</p>${wing!==null?`<div class="wing">可能的翼型：${types[wing]}（${sums[wing]} 分）</div>`:''}${weakNote}`
+    : `<div class="label">得分最高的类型（并列）</div><div class="type">${tops.map(i=>types[i]).join(' / ')}</div>${tops.map(i=>`<p class="desc"><b>${types[i]}</b>：${descs[i]}</p>`).join('')}${weakNote}`;
   const prev={}; document.querySelectorAll('.row').forEach(r=>prev[r.dataset.t]=r.querySelector('.fill').style.width);
-  $('ranking').innerHTML = order.map(i=>`<div class="row${sums[i]===max?' best':''}" data-t="${i}"><span class="name">${types[i]}</span><div class="track"><div class="fill" style="width:${prev[i]||'0%'}" data-w="${(sums[i]/30*100).toFixed(1)}"></div></div><span class="val">${sums[i]} 分</span></div>`).join('');
+  $('ranking').innerHTML = order.map(i=>`<div class="row${(!flat && sums[i]===max)?' best':''}" data-t="${i}"><span class="name">${types[i]}</span><div class="track"><div class="fill" style="width:${prev[i]||'0%'}" data-w="${(sums[i]/30*100).toFixed(1)}"></div></div><span class="val">${sums[i]} 分</span></div>`).join('');
   requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('.row .fill').forEach(f=>f.style.width=f.dataset.w+'%')));
   $('summary').value=summaryText(sums);
   $('result').style.display='block';
