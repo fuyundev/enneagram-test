@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="60 题大五人格问卷 BFI-2 中文版，答完即出外向性、宜人性、尽责性、负性情绪、开放性五个维度及 15 个子维度得分；数据仅保存在本地。" />
+  <meta name="theme-color" content="#5b5bd6" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="大五人格测试（BFI-2）" />
+  <meta property="og:description" content="60 题大五人格问卷 BFI-2 中文版，答完即出外向性、宜人性、尽责性、负性情绪、开放性五个维度及 15 个子维度得分；数据仅保存在本地。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" />
+  <title>大五人格测试（BFI-2）</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header id="header">
+      <div class="htop">
+        <h1>大五人格测试（BFI-2）</h1>
+        <nav class="hnav" aria-label="站内导航"><a href="../">全部测试</a><a href="../overview/">结果总览</a></nav>
+      </div>
+      <p class="sub">共 60 题。下面是一些关于个人特征的描述，请判断每一句在多大程度上适用于你（每句前面都省略了「我是一个……的人」）。答完后可复制或下载结果。所有答案仅保存在你的浏览器本地，不会上传到任何服务器。</p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="60" aria-valuenow="0" id="progressbar"><div id="progress"></div></div>
+      <div class="status"><span id="count">已完成 0 / 60</span><span>1 = 非常不同意　5 = 非常同意</span></div>
+    </header>
+
+    <section id="questions" aria-label="题目列表"></section>
+    <div class="actions">
+      <button class="primary" id="finish">完成并生成结果</button>
+      <button class="secondary" id="clear">清空重答</button>
+    </div>
+    <section class="result" id="result" aria-live="polite">
+      <h2>你的答题结果</h2>
+      <p class="hint">每个维度取所属 12 题的平均分（1～5 分，反向题已换算），下面还列出 15 个子维度。分数只反映你在这份问卷上的自我描述，不等同于专业心理评估；「偏高 / 偏低」是相对量表中点的粗略划分，并非常模比较。</p>
+      <div id="resultBody"></div>
+      <textarea id="summary" hidden readonly aria-hidden="true" tabindex="-1"></textarea>
+      <div class="export-box">
+        <div class="ai-cta">
+          <div class="ai-cta-text"><b>让 AI 解读我的结果</b><span>会把你的逐题作答、各项得分和一段分析提示词一起复制，粘贴到 AI 里发送即可。内容由你自己粘贴，本页不经手任何数据。</span></div>
+          <div class="ai-group" id="aiGroup"></div>
+        </div>
+        <details class="more" open>
+          <summary>复制、下载、只要汇总</summary>
+          <div class="more-body">
+            <div class="export-row">
+              <span class="export-label">内容</span>
+              <div class="segmented" role="radiogroup" aria-label="导出内容" id="exportMode">
+                <button type="button" class="on" data-mode="details" role="radio" aria-checked="true">逐题结果</button>
+                <button type="button" data-mode="summary" role="radio" aria-checked="false">汇总结果</button>
+              </div>
+              <span class="export-note">上面的 AI 按钮也按这里的选择发送。</span>
+            </div>
+            <div class="export-row">
+              <button class="secondary small" id="copy">复制文本</button>
+              <button class="secondary small" id="copyPrompt">复制提示词 + 文本</button>
+              <div class="dl-group">
+                <button class="secondary small" data-format="txt">下载 TXT</button>
+                <button class="secondary small" data-format="csv">下载 CSV</button>
+                <button class="secondary small" data-format="json">下载 JSON</button>
+              </div>
+              <div class="wechat-note">微信内置浏览器不支持下载文件，请使用「复制」，或点右上角「在浏览器中打开」后再下载。</div>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="next" id="next"></div>
+      <p class="cite">BFI-2 条目版权 © 2015 Oliver P. John &amp; Christopher J. Soto；中文版翻译修订：张博、黎坚、李一茗、罗晶、叶勇豪、尹露、陈卓生。引用：Soto, C. J., &amp; John, O. P. (2017). The next Big Five Inventory (BFI-2). <i>Journal of Personality and Social Psychology, 113</i>, 117–143.</p>
+    </section>
+    <div class="top"><a id="toplink" href="#top">回到顶部</a></div>
+    <footer>Made by fuyundev</footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <button id="fab" type="button" aria-label="页面导航"></button>
+  <script src="../assets/ai-logos.js"></script>
+  <script src="../assets/common.js"></script>
+  <script src="../assets/result-ctx.js"></script>
+  <script src="../assets/tests/bfi2.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

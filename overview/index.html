@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="汇总本机保存的各心理自测结果（九型人格、BFI-2、HEXACO-60、PVQ-21、ECR），可一起复制、下载，或交给 AI 做跨量表综合分析。" />
+  <meta name="theme-color" content="#5b5bd6" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E" />
+  <title>我的结果总览 · 心理自测</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body data-page="overview" data-base="../">
+  <main class="wrap">
+    <nav class="nav" aria-label="导航"><a href="../">全部测试</a></nav>
+    <header id="header" class="static">
+      <div class="head-row"><h1>我的结果总览</h1><span class="head-note" id="doneCount"></span></div>
+      <p class="sub">汇总本机保存的各测试结果，未完成的测试以灰色显示。数据只在你的浏览器里，换设备或清除缓存后不会保留。</p>
+    </header>
+    <div id="sections" class="osecs"></div>
+    <section class="export-box" id="exportBox">
+      <div class="ai-cta">
+        <div class="ai-cta-text"><b>让 AI 做跨量表的综合分析</b><span>会把已完成测试的结果和一段综合分析提示词一起复制：先概述各量表的计分方式，再要求 AI 归纳跨测试一致的主题、指出相互矛盾之处并解释、综合出完整画像并给建议。内容由你自己粘贴，本页不经手任何数据。</span></div>
+        <div class="ai-group" id="aiGroup"></div>
+      </div>
+      <details class="more" open>
+        <summary>复制、下载、连逐题作答一起</summary>
+        <div class="more-body">
+          <div class="export-row">
+            <span class="export-label">内容</span>
+            <div class="segmented" role="radiogroup" aria-label="导出内容" id="exportMode">
+              <button type="button" class="on" data-mode="summary" role="radio" aria-checked="true">全部汇总</button>
+              <button type="button" data-mode="details" role="radio" aria-checked="false">含逐题作答</button>
+            </div>
+            <span class="export-note" id="lenNote"></span>
+          </div>
+          <div class="export-row">
+            <button class="secondary small" id="copyAll">复制提示词 + 全部结果</button>
+            <button class="secondary small" id="copyPlain">仅复制结果</button>
+            <div class="dl-group">
+              <button class="secondary small" data-format="txt">下载 TXT</button>
+              <button class="secondary small" data-format="json">下载 JSON</button>
+            </div>
+            <div class="wechat-note">微信内置浏览器不支持下载文件，请使用「复制」，或点右上角「在浏览器中打开」后再下载。</div>
+          </div>
+        </div>
+      </details>
+    </section>
+    <footer>Made by fuyundev</footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="../assets/ai-logos.js"></script>
+  <script src="../assets/common.js"></script>
+  <script src="../assets/result-ctx.js"></script>
+  <script src="../assets/tests/enneagram.js"></script>
+  <script src="../assets/tests/bfi2.js"></script>
+  <script src="../assets/tests/hexaco.js"></script>
+  <script src="../assets/tests/pvq.js"></script>
+  <script src="../assets/tests/ecr.js"></script>
+  <script src="../assets/hub.js"></script>
+</body>
+</html>
